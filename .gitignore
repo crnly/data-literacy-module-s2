@@ -1,0 +1,12 @@
+# Survey data is downloaded by analysis.R (ODbL)
+data/
+
+# Quarto build files
+.quarto/
+report_files/
+report.typ
+
+.DS_Store
+
+# Quarto recreates this on every render
+docs/.gitignore

@@ -1,0 +1,81 @@
+# Data literacy process (Schüller, 2019) and where each step lives in this repository
+# Render: d2 docs/process.d2 docs/process.svg
+
+vars: {
+  d2-config: {
+    layout-engine: elk
+    theme-id: 0
+  }
+}
+
+direction: right
+
+classes: {
+  step: {
+    style: {fill: "#e8f1fc"; stroke: "#2a78d6"; border-radius: 8; stroke-width: 2; font-size: 18; bold: true}
+  }
+  concept: {
+    style: {fill: "#f7f7f5"; stroke: "#898781"; stroke-dash: 4; border-radius: 8; font-size: 18; bold: true}
+  }
+  where: {
+    shape: page
+    style: {fill: "#ffffff"; stroke: "#c9c8c1"; font-size: 14; bold: false}
+  }
+  code: {
+    style: {fill: "#ffffff"; stroke: "#2a78d6"; font-size: 14; bold: false; border-radius: 4}
+  }
+  source: {
+    shape: cylinder
+    style: {fill: "#fdeee7"; stroke: "#eb6834"; font-size: 14}
+  }
+}
+
+title: |md
+  # Data Literacy · Process
+  From question to report · blue = done · dashed = concept · orange = external source
+| {near: top-center}
+
+lit: Research\nliterature {class: source}
+survey: Stack Overflow\nSurvey 2026\n30,903 responses {class: source}
+
+s1: 1 · Question {
+  class: step
+  w: report §1–2\nH1–H3 {class: where}
+}
+s2: 2 · Literature {
+  class: step
+  w: report §2, §6\nAPA 7 {class: where}
+}
+s3: 3 · Data collection {
+  class: step
+  w: report §3 · Appendix A\nquestionnaire draft {class: where}
+}
+s4: 4 · Qualitative {
+  class: concept
+  w: Appendix B\ncategory system {class: where}
+}
+s5: 5 · Quantitative · analysis.R {
+  class: step
+  direction: right
+  a: download {class: code}
+  b: prepare\nclean · recode · scale {class: code}
+  c: describe {class: code}
+  d: test\nWilcoxon · t · Spearman\nHolm correction {class: code}
+  r: robustness\n+ AI non-use (χ²) {class: code}
+  e: plot {class: code}
+  a -> b -> c -> d -> r -> e
+}
+s6: 6 · Interpret {
+  class: step
+  w: report §4–5\neffect sizes, selection bias {class: where}
+}
+s7: 7 · Document {
+  class: step
+  w: report.pdf {class: where}
+}
+
+s1 -> s2 -> s3 -> s5 -> s6 -> s7
+s3 -> s4: follow-up {style.stroke-dash: 4}
+s4 -> s6 {style.stroke-dash: 4}
+lit -> s2
+survey -> s5.a

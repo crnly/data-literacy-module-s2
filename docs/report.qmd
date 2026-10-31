@@ -1,0 +1,196 @@
+---
+title: "Role, Experience, and the Evaluation of AI Tools"
+subtitle: "A Secondary Analysis of the Stack Overflow Developer Survey 2026"
+lang: en
+format:
+  typst:
+    papersize: a4
+    fontsize: 11pt
+    include-in-header:
+      text: "#set document(date: none)"
+execute:
+  echo: false
+  warning: false
+knitr:
+  opts_chunk:
+    dev: png
+    dpi: 200
+    fig-width: 8
+    fig-height: 5
+---
+
+```{r}
+#| include: false
+source("../analysis.R", chdir = TRUE)   # chdir: data/ stays in the repo root
+
+# APA formatting: 2 decimals, p with 3 decimals, no leading zero for bounded values
+f2  <- function(x) formatC(x, format = "f", digits = 2)
+f2r <- function(x) sub("^(-?)0\\.", "\\1.", f2(x))
+fp  <- function(p) if (p < .001) "< .001" else if (p > .999) "> .999" else
+  paste("=", sub("^0", "", formatC(p, format = "f", digits = 3)))
+pct <- function(x) paste0(formatC(100 * x, format = "f", digits = 1), "%")
+num <- function(x) format(x, big.mark = ",")
+d   <- function(var, grp, col) desc[desc$variable == var & desc$group == grp, col]
+SD_ <- "Software Development"; PS <- "Platform & Security"
+```
+
+## Abstract {.unnumbered}
+
+People in platform and security roles often bear the consequences of faulty AI output directly. This study examined whether they rate AI tools more critically than people in software development, and whether ratings decline with work experience. The data come from the Stack Overflow Developer Survey 2026 (N = `r num(nrow(dat))` people in the two role groups). Among AI users, platform and security roles held a slightly less favorable attitude toward AI, but the effect was negligible (r~rb~ = `r f2r(h1$r_rb)`). Their lower usefulness ratings were not significant after correcting for multiple tests, and more experience went with slightly higher, not lower, usefulness ratings. Exploratory analysis showed that platform and security roles more often do not use AI at all (`r pct(nonuse$share[2])` vs. `r pct(nonuse$share[1])`). Because almost only AI users answered the evaluation questions, the most critical voices are missing from the main comparison.
+
+**Keywords:** AI tools, technology acceptance, DevOps, IT security, selection bias
+
+## 1 Introduction
+
+AI assistants have become part of everyday software development. At the same time, studies show that AI-generated code frequently contains vulnerabilities (Pearce et al., 2022) and that people using AI assistance write less secure code while believing it to be more secure (Perry et al., 2023). The DORA report finds that AI adoption increases individual productivity but has a negative impact on software delivery stability (DORA, 2024). Those who run platforms or are responsible for security are directly accountable for such stability. This report therefore asks: *Are role and work experience related to how developers rate AI tools at work?*
+
+## 2 Literature Review
+
+The literature was searched in Google Scholar, ACM Digital Library and IEEE Xplore, combining terms for AI tools (*AI coding assistant, Copilot, LLM*), evaluation (*trust, perceived usefulness, technology acceptance*) and risk (*security, DevOps, insecure code*).
+
+According to the Technology Acceptance Model, *perceived usefulness* is a central predictor of technology use (Davis, 1989). For automated systems, Lee and See (2004) emphasize that trust should match actual reliability. Too much trust leads to misuse, too little to the disuse of helpful automation (Parasuraman & Riley, 1997). People who experience a system's risks firsthand should therefore judge it more cautiously. This leads to three directional hypotheses:
+
+- **H1:** People in platform and security roles hold a less favorable attitude toward AI tools than people in software development.
+- **H2:** People in platform and security roles rate the usefulness of AI lower than people in software development.
+- **H3:** The more work experience a person has, the lower they rate the usefulness of AI.
+
+## 3 Method
+
+### 3.1 Sample
+
+The data set contains `r num(nrow(raw))` responses. The analysis included people belonging to one of the two role groups (N = `r num(nrow(dat))`). The *Software Development* group comprises all "Developer, …" roles plus "Software engineer" (n = `r num(sum(dat$group == SD_))`). The *Platform & Security* group (n = `r num(sum(dat$group == PS))`) consists of `r paste(sprintf("%s (%d)", names(platform_roles), platform_roles), collapse = ", ")`. Mean work experience was M = `r f2(d("WorkExp", SD_, "M"))` years (SD = `r f2(d("WorkExp", SD_, "SD"))`) in Software Development and M = `r f2(d("WorkExp", PS, "M"))` years (SD = `r f2(d("WorkExp", PS, "SD"))`) in Platform & Security.
+
+**Who answered the AI questions.** About half of the sample did not answer the evaluation questions (attitude: n = `r num(h1$n)`; usefulness: n = `r num(h2$n)`). Of the `r num(nonuser_answered["n"])` people who stated that they do not use AI tools at work, only `r nonuser_answered["attitude"]` answered the attitude item and `r nonuser_answered["usefulness"]` the usefulness items. H1–H3 therefore describe **AI users**, not developers in general.
+
+### 3.2 Measures
+
+**Attitude toward AI** was measured with a single item on a five-point scale (1 = *very unfavorable* to 5 = *very favorable*); "Not sure" was treated as missing. **Perceived usefulness** was rated for seven tasks (design, implementation, review, debugging, documentation, architecture, communication) on a four-point scale: *not useful* (1), *no strong opinion* (2), *useful* (3), *very useful* (4); "Not applicable" was treated as missing. Placing *no strong opinion* in the middle is an assumption and is checked in Section 4.4. The items were averaged if at least four were answered. Internal consistency was good (Cronbach's α = `r f2r(alpha)`, n = `r num(alpha_n)` complete cases). **Work experience** was recorded in years; `r n_exp_removed` values above 50 were removed as implausible.
+
+### 3.3 Analysis
+
+The tests follow the level of measurement: a Wilcoxon rank-sum test for the ordinal attitude (H1), a Welch t-test for the usefulness scale (H2), and a Spearman correlation for the skewed experience variable (H3). All hypotheses are directional (α = `r f2r(ALPHA)`). Because three tests address one research question, p-values were adjusted with the Holm method (Holm, 1979). Effect sizes are the rank-biserial correlation r~rb~ and Cohen's d; following Cohen (1988), values below .10 (r) or .20 (d) are considered negligible. Analyses not planned in advance are reported separately as exploratory.
+
+### 3.4 Data Source and Quality
+
+Stack Overflow collected the data in 2026 through a standardized online survey (Qualtrics). Objectivity is high, as there were no interviewers. Representativeness is limited: participation was voluntary and restricted to Stack Overflow users. The anonymized data are published under the Open Database License (ODbL 1.0). The analysis was conducted in R (version `r paste(R.version$major, R.version$minor, sep = ".")`) using base functions only. The complete code is in `analysis.R`, which pins the data to a fixed version and verifies it by checksum.
+
+## 4 Results
+
+### 4.1 Descriptive Results
+
+```{r}
+show <- desc[desc$variable != "WorkExp", ]
+show$variable <- ifelse(show$variable == "attitude", "Attitude (1–5)", "Usefulness (1–4)")
+knitr::kable(show, row.names = FALSE, digits = 2,
+             col.names = c("Variable", "Group", "n", "M", "SD", "Mdn"),
+             caption = "Descriptive statistics by role group (AI users)")
+```
+
+In both groups, a favorable attitude toward AI predominated. On average, both groups rated usefulness between *no strong opinion* and *useful*.
+
+### 4.2 Hypothesis Tests
+
+**H1.** A Wilcoxon rank-sum test showed that people in platform and security roles (Mdn = `r f2(d("attitude", PS, "Mdn"))`, M = `r f2(d("attitude", PS, "M"))`) held a less favorable attitude toward AI than people in software development (Mdn = `r f2(d("attitude", SD_, "Mdn"))`, M = `r f2(d("attitude", SD_, "M"))`), W = `r num(round(h1$statistic))`, p `r fp(h1$p.value)`, p~Holm~ `r fp(p_holm["H1"])`, r~rb~ = `r f2r(h1$r_rb)`. H1 is supported, but the effect is negligible.
+
+```{r}
+#| fig-cap: "Attitude toward AI tools by role group (AI users)"
+plot_attitude()
+```
+
+**H2.** A Welch t-test showed lower usefulness ratings in platform and security roles (M = `r f2(d("usefulness", PS, "M"))`, SD = `r f2(d("usefulness", PS, "SD"))`) than in software development (M = `r f2(d("usefulness", SD_, "M"))`, SD = `r f2(d("usefulness", SD_, "SD"))`), t(`r f2(h2$parameter)`) = `r f2(h2$statistic)`, p `r fp(h2$p.value)`, d = `r f2r(h2$d)`. After Holm correction, the difference is not significant, p~Holm~ `r fp(p_holm["H2"])`. H2 is not supported.
+
+```{r}
+#| fig-cap: "Perceived usefulness of AI by role group (means with standard error)"
+plot_usefulness()
+```
+
+**H3.** A Spearman correlation found no negative relationship between work experience and perceived usefulness, r~s~ = `r f2r(h3$estimate)`, p `r fp(h3$p.value)`, p~Holm~ `r fp(p_holm["H3"])`, n = `r num(h3$n)`. H3 is not supported.
+
+### 4.3 Exploratory Analyses
+
+**Direction of H3.** Because the relationship was positive, contrary to the hypothesis, it was tested two-sided: r~s~ = `r f2r(h3x$estimate)`, p `r fp(h3x$p.value)`. More experienced AI users tended to rate AI as slightly more useful, though the effect is negligible.
+
+```{r}
+#| fig-cap: "Work experience and perceived usefulness of AI with regression line"
+plot_experience()
+```
+
+**AI non-use.** Since non-users were largely missing from H1–H3, the share of people who do not use AI at work was compared directly. It was higher in platform and security roles (`r pct(nonuse$share[2])`) than in software development (`r pct(nonuse$share[1])`), χ²(1) = `r f2(nonuse$statistic)`, p `r fp(nonuse$p.value)`, φ = `r f2r(nonuse$phi)`. This difference is statistically clear but also small.
+
+### 4.4 Robustness
+
+```{r}
+rb <- robust
+rb$p <- sapply(rb$p, function(p) sub("^= ", "", fp(p)))
+rb$effect <- f2r(rb$effect)
+knitr::kable(rb, row.names = FALSE, col.names = c("Check", "p (one-sided)", "Effect"),
+             caption = "Robustness checks (effect: r_rb for H1, d for H2)")
+```
+
+H1 remains stable without system administrators. H2 depends on analytic choices: it disappears without system administrators and is borderline when *no strong opinion* is treated as missing. This supports the conclusion that role makes little difference to how AI users rate usefulness.
+
+## 5 Discussion
+
+Among AI users, role and experience explain almost nothing about how AI tools are evaluated. Platform and security roles held a slightly less favorable attitude, but the effect is negligible; the difference in perceived usefulness did not survive correction for multiple tests and depended on analytic choices. Experience, contrary to H3, went with slightly higher usefulness ratings. One possible explanation is that experienced people can verify AI output better and use it more deliberately, which fits the idea of trust calibrated to reliability (Lee & See, 2004).
+
+The more meaningful finding lies before the evaluation: platform and security roles more often do not use AI at all. Since these non-users hardly answered the evaluation questions, the main comparison measures skepticism only among people who have already adopted AI. Any skepticism that leads to non-adoption is therefore invisible in H1–H3, and the true group differences in attitude are probably underestimated.
+
+**Limitations.** The analysis rests on AI users only (selection bias). The sample is self-selected and limited to Stack Overflow users. Attitude was measured with a single item. The role groups differ in size and are heterogeneous. The non-use comparison was not planned in advance. A cross-sectional survey cannot establish cause and effect. Future studies should ask all participants, including non-users, with multi-item scales (Appendix A) and explore qualitatively *why* roles adopt AI differently (Appendix B).
+
+## 6 References
+
+Cohen, J. (1988). *Statistical power analysis for the behavioral sciences* (2nd ed.). Lawrence Erlbaum Associates.
+
+Davis, F. D. (1989). Perceived usefulness, perceived ease of use, and user acceptance of information technology. *MIS Quarterly, 13*(3), 319–340. https://doi.org/10.2307/249008
+
+DORA. (2024). *Accelerate State of DevOps Report 2024*. Google Cloud. https://dora.dev/research/2024/dora-report/
+
+Holm, S. (1979). A simple sequentially rejective multiple test procedure. *Scandinavian Journal of Statistics, 6*(2), 65–70.
+
+Kuckartz, U., & Rädiker, S. (2022). *Qualitative Inhaltsanalyse. Methoden, Praxis, Computerunterstützung: Grundlagentexte Methoden* (5th ed.). Beltz Juventa.
+
+Lee, J. D., & See, K. A. (2004). Trust in automation: Designing for appropriate reliance. *Human Factors, 46*(1), 50–80. https://doi.org/10.1518/hfes.46.1.50_30392
+
+Parasuraman, R., & Riley, V. (1997). Humans and automation: Use, misuse, disuse, abuse. *Human Factors, 39*(2), 230–253. https://doi.org/10.1518/001872097778543886
+
+Pearce, H., Ahmad, B., Tan, B., Dolan-Gavitt, B., & Karri, R. (2022). Asleep at the keyboard? Assessing the security of GitHub Copilot's code contributions. In *2022 IEEE Symposium on Security and Privacy (SP)* (pp. 754–768). IEEE. https://doi.org/10.1109/SP46214.2022.9833571
+
+Perry, N., Srivastava, M., Kumar, D., & Boneh, D. (2023). Do users write more insecure code with AI assistants? In *Proceedings of the 2023 ACM SIGSAC Conference on Computer and Communications Security* (pp. 2785–2799). ACM. https://doi.org/10.1145/3576915.3623157
+
+Stack Overflow. (2026). *Stack Overflow Developer Survey 2026* [Data set]. https://survey.stackoverflow.co/
+
+{{< pagebreak >}}
+
+## Appendix A · Questionnaire Draft {.unnumbered}
+
+A short questionnaire to measure the constructs more precisely in a follow-up study. It applies the rules for questionnaire design: several items per construct, one fully labeled Likert scale, and a reverse-coded item. Unlike the source survey, it should be shown to all participants, including non-users of AI.
+
+*Scale for A1–B3:* 1 = strongly disagree · 2 = disagree · 3 = neither · 4 = agree · 5 = strongly agree
+
+| No. | Construct | Item |
+|---|---|---|
+| A1 | Usefulness | AI tools speed up my work on infrastructure code (e.g., Terraform, Helm). |
+| A2 | Usefulness | AI tools help me find errors in pipelines or deployments faster. |
+| A3 | Usefulness | AI tools improve the quality of my documentation. |
+| B1 | Trust | I adopt AI suggestions for configurations without additional review. |
+| B2 | Trust | I consider AI-generated code secure enough for production. |
+| B3 | Trust (reversed) | I review AI output more thoroughly than code written by people. |
+| C1 | Role | Which role best describes your work? (single choice) |
+| C2 | Experience | How many years have you worked professionally in IT? (number) |
+| C3 | Use | Do you use AI tools at work? If not, why not? (choice + free text) |
+
+## Appendix B · Qualitative Follow-up (Concept) {.unnumbered}
+
+The data set contains no free-text answers, so no qualitative analysis was carried out. This concept shows how the results could be explored through interviews and a content-structuring qualitative content analysis (Kuckartz & Rädiker, 2022).
+
+**Interview guide.** (1) Describe a situation in which an AI tool really helped you at work. (2) And one in which it caused harm or cost you time? (3) How do you tell whether you can trust an AI output? (4) What rules does your team have for using AI, and why? (5) If you do not use AI: what keeps you from it?
+
+**Deductive category system** (anchor examples are illustrative, not from real interviews):
+
+| Category | Subcategory | Definition | Anchor example |
+|---|---|---|---|
+| Benefit | Speed | AI saves time on routine tasks. | "For Terraform boilerplate it's gold." |
+| Risk | Security | AI output creates vulnerabilities. | "The suggestion just left the ports open." |
+| Risk | Reliability | The output is wrong or made up. | "That flag doesn't exist in this version." |
+| Trust | Review behavior | How the person checks AI output. | "Everything from the AI goes through review." |
+| Organization | Policies | Team or company rules on AI use. | "No customer data in external models." |
