@@ -29,6 +29,8 @@ d2 docs/process.d2 docs/process.svg              # rebuilds the diagram
 
 Requires R ≥ 4.3 (no packages), Quarto ≥ 1.4, D2 ≥ 0.6. The data is pinned to a fixed version and verified by checksum.
 
+The diagram uses theme 101 (Orange Creamsicle) in sketch mode, configured in `docs/process.d2`.
+
 ## Notes
 
 - **Data:** [Stack Overflow Developer Survey 2026](https://survey.stackoverflow.co/), 30,903 responses, ODbL 1.0. Not stored in the repository.
